@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundry — Platform Discovery Question List</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --mut:#6b6b6b; --line:#e6e2dc; --bg:#faf8f5; --card:#ffffff;
+    --acc:#c0392b; --acc2:#e65100; --ok:#1e7d46; --warnbg:#fff3e0; --warnln:#e65100;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px}
+  header{background:#171513;color:#fff;padding:26px 0 18px;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  header h1{margin:0;font-size:20px;letter-spacing:.2px}
+  header .sub{margin:6px 0 12px;color:#c9c2b8;font-size:13px}
+  .progress{height:6px;background:#3a352f;border-radius:3px;overflow:hidden}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--acc2),#f5b041);transition:width .25s}
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;flex-wrap:wrap;gap:8px}
+  .meta .actions{display:flex;gap:8px;flex-wrap:wrap}
+  button{font:inherit;font-size:12.5px;padding:5px 10px;border-radius:6px;border:1px solid #57504a;background:#26221e;color:#eee;cursor:pointer}
+  button:hover{background:#332e29}
+  button.danger{border-color:#7a3b32;color:#f2b8ad}
+  nav#toc{display:flex;flex-wrap:wrap;gap:6px;padding-top:14px;padding-bottom:6px}
+  nav#toc a{font-size:12px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 10px}
+  nav#toc a:hover{border-color:var(--acc2)}
+  nav#toc a b{color:var(--acc)}
+  main{padding-bottom:30px}
+  details.sec{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:14px 0;overflow:hidden}
+  details.sec summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:baseline;gap:10px;border-bottom:1px solid transparent}
+  details.sec[open] summary{border-bottom-color:var(--line)}
+  summary::-webkit-details-marker{display:none}
+  .snum{font-size:12px;color:var(--acc);font-weight:700;letter-spacing:1px}
+  .stitle{font-size:16.5px;font-weight:650;flex:1}
+  .scount{font-size:12px;color:var(--mut);white-space:nowrap}
+  .intro{padding:12px 18px 0;color:var(--mut);font-size:13.5px;font-style:italic}
+  .qlist{padding:8px 12px 14px}
+  .q{padding:10px 6px 12px;border-bottom:1px dashed var(--line);position:relative}
+  .q:last-of-type{border-bottom:none}
+  .q label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding-right:28px}
+  .q input[type=checkbox]{margin-top:4px;width:16px;height:16px;accent-color:var(--ok);flex:none;cursor:pointer}
+  .qt{font-size:14.5px}
+  .q.done .qt{color:var(--mut)}
+  .q.done{background:#f6faf7}
+  .del{position:absolute;top:8px;right:6px;border:none;background:none;color:#b9b1a7;font-size:16px;padding:2px 6px}
+  .del:hover{color:var(--acc);background:none}
+  .note{margin:6px 0 0 26px;font-size:12.5px;color:var(--mut)}
+  .note.warn{background:var(--warnbg);border-left:3px solid var(--warnln);padding:6px 10px;border-radius:0 6px 6px 0;color:#7a4a12}
+  .ans{margin:8px 0 0 26px}
+  .ans textarea{width:100%;min-height:34px;resize:none;overflow:hidden;font:inherit;font-size:13.5px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:#fffdf9;color:var(--ink)}
+  .ans textarea:focus{outline:none;border-color:var(--acc2)}
+  .trap{margin:10px 18px 16px;background:var(--warnbg);border:1px solid #f0c48c;border-radius:8px;padding:12px 14px;font-size:13.5px}
+  .trap b{color:var(--warnln)}
+  .addrow{display:flex;gap:8px;padding:10px 18px 16px}
+  .addrow input{flex:1;font:inherit;font-size:13.5px;padding:7px 10px;border:1px solid var(--line);border-radius:7px}
+  .addrow button{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .addrow button:hover{border-color:var(--acc2);background:#fff}
+  footer{padding:10px 0 60px}
+  .summary{background:#171513;color:#e8e2da;border-radius:10px;padding:18px 20px;font-size:14px}
+  .summary b{color:#f5b041}
+  .toolbar{display:flex;gap:8px;margin:6px 0 0}
+  .toolbar button{background:var(--card);color:var(--ink);border-color:var(--line)}
+  @media print{
+    header{position:static}
+    .actions,.addrow,.del,nav#toc,.toolbar{display:none!important}
+    details.sec{page-break-inside:avoid}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Foundry — Platform Discovery Question List</h1>
+    <div class="sub">Replacing Mindbody, the CRM, Zapier and the spreadsheets with one platform. Every question below is a decision the software will hard-code. Tick questions as answered and type answers under each one — <b>everything saves automatically on this device</b>. When done, hit "Download answers" and send the file back.</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="meta">
+      <span id="count"></span>
+      <span class="actions">
+        <button id="expand">Expand all</button>
+        <button id="collapse">Collapse all</button>
+        <button id="export">Download answers</button>
+        <button id="print">Print</button>
+        <button id="reset" class="danger">Reset</button>
+      </span>
+    </div>
+  </div>
+</header>
+<nav id="toc" class="wrap"></nav>
+<main id="main" class="wrap"></main>
+<footer class="wrap">
+  <div class="summary"><b>If there are only ten minutes, these five:</b> one identity per member across all sites with an immutable ID; a full audit trail on every action; billing states (failed, frozen, notice-given) defined as exact policy, not vibes; an entitlement model that can't silently orphan bookings; and a written plan for re-collecting every payment mandate at cutover. Everything else is fixable later. Those five are not.</div>
+</footer>
+
+<script>
+const KEY = 'foundry-discovery-v1';
+
+const SEED = [
+{num:'01',title:'First principles',intro:'If these are not answered, every other answer will drift. Pin down scope before mechanics.',trap:null,questions:[
+{t:'What is the system of record for money, and what is the system of record for members? Are they the same system?',n:'If billing lives in Stripe/GoCardless and members live in our DB, define which wins in a conflict — now.'},
+{t:'What must work on day one vs. which Mindbody features do we actually never use?',n:'Pull 12 months of feature usage before assuming we need parity. Most gyms use ~30% of Mindbody.'},
+{t:'How many sites now, how many in 3 years, and will any ever be in a different country / currency / tax regime?'},
+{t:'Are all sites one legal entity, or different companies? Which entity takes the money at each site, and whose VAT number goes on the receipt?'},
+{t:'Will there ever be franchisees, licensed operators, or a sold-off site that needs its data carved out?'},
+{t:'What manual spreadsheets exist today, and what decision does each one feed?',n:'Each sheet is a missing feature with the requirements already written down.'},
+{t:'Who is the internal owner who can answer policy questions weekly? (Not the CEO — the person who actually knows what front desk does.)'},
+{t:'What is the appetite for changing business rules to fit simpler software, vs. software that models every historical exception?'}
+]},
+{num:'02',title:'Memberships & products',intro:'The product catalogue is the spine of the data model. Every weird product forgotten now becomes a migration nightmare later.',trap:{title:'Trap hit for real',text:'A booking with no valid entitlement behind it silently dies. Mindbody auto-cancelled any class booking that had no pricing option attached — 729 members\u2019 bookings vanished with no warning to anyone. Decide explicitly: can a booking ever exist without an entitlement paying for it, and if the entitlement lapses later, what happens to already-made future bookings?'},questions:[
+{t:'List every product sold today: memberships, class packs, PT packs, drop-ins, day passes, trials, retail, corporate deals, staff comps. All of them.'},
+{t:'Rolling monthly vs. fixed-term contracts — which exist, and what is the minimum commitment on each?'},
+{t:'Can one member hold multiple products at once (membership + PT pack + class pack)? Which one gets consumed first when they book?',n:'Consumption priority is a genuine algorithm — Mindbody\u2019s is opaque and unpredictable.'},
+{t:'What does each membership entitle: which sites, which class types, how many sessions per day/week/month, guest privileges?'},
+{t:'Are entitlements per-site or global? Can a member at Site A book at Site B — always, sometimes, at a premium tier?'},
+{t:'Do zero-price products exist on purpose (staff access, comps, legacy grandfathered deals)? List each and why.',n:'A \u00a30 "Lifestyle Gym Access" product looked like a billing bug for months. It was deliberate. Document intent in the product itself.',w:1},
+{t:'Do session packs expire? If unused sessions roll over, for how long, and do multiple packs stack?',n:'Packs that roll for a year and stack mean "sessions remaining" is the sum of every live pack, not the newest one. Staff and members both get this wrong constantly.',w:1},
+{t:'When is a pack session actually consumed — at booking, at check-in, or at session completion? What happens to it on a no-show?'},
+{t:'Family / linked / joint memberships: who pays, who books, who gets notified, and can a linked member book for another?'},
+{t:'Corporate memberships: who is the buyer, how are seats allocated, and what happens when an employee leaves the company?'},
+{t:'Under-18s: allowed at all? Guardian consent, guardian billing, restricted hours?'},
+{t:'Can a price change apply to existing members, or are they grandfathered forever? Who has the power to run a price rise and how is it communicated?'},
+{t:'Upgrades and downgrades mid-cycle: prorated, effective next cycle, or blocked? Does a downgrade restart the commitment period?'}
+]},
+{num:'03',title:'Billing engine',intro:'This is where "we\u2019ll figure it out later" costs real money. Every one of these is business policy, not an engineering choice.',trap:{title:'Trap hit for real',text:'Charging is a separate system from selecting. A PT could be picked in the sales form but not exist in the charging engine\u2019s map — sellable but unchargeable, and nobody noticed until revenue went missing. If the platform has any mapping between "what staff can choose" and "what the billing engine knows how to charge", make it one table, not two.'},questions:[
+{t:'Payment rails: card, Direct Debit (GoCardless-style), or both? Which is the default for memberships vs. one-off purchases?'},
+{t:'What day does billing run — anniversary of join date, or one fixed day for everyone? What happens for the partial first month?'},
+{t:'Failed payment policy, exactly: how many retries, on what schedule, and what does the member experience between failure and resolution — can they still book? Still get through the door?'},
+{t:'At what point does a failed payer become a cancelled member? Automatically, or only after a human decides?'},
+{t:'Who chases debt — automated dunning emails, front desk, or the owner over WhatsApp? Does the system need a debt ledger per member?'},
+{t:'Refund policy: who can issue one, full vs. partial, back to the card vs. account credit? Does account credit exist as a concept at all?'},
+{t:'Proration rules for mid-month join, mid-month upgrade, mid-month freeze. Write the actual arithmetic down.'},
+{t:'VAT treatment per product type, and do members need proper VAT invoices/receipts they can download?'},
+{t:'What revenue never touches the platform — ClassPass, corporate invoices paid by bank transfer, retail through a separate till?',n:'Thousands per month can flow through Xero and ClassPass that the platform never sees. Decide whether the platform records it (even as a stub) or reporting will always be wrong.',w:1},
+{t:'Card expiry / card update flow: self-serve in the app, or a staff phone call? What nudges go out before a stored card dies?'},
+{t:'Chargebacks: what is the process, and does a chargeback auto-suspend the member?'},
+{t:'Does anything bill outside the membership cycle — PT charged per session, monthly PT retainers, late-cancel fees? Same engine or separate flow?'},
+{t:'How does money reconcile to the accounts (Xero etc.)? Per-transaction feed, daily summary, or an accountant with a CSV?'}
+]},
+{num:'04',title:'Promos, discounts & trials',intro:'Promos are where billing logic goes to die. Every promo marketing invents becomes a state machine the platform must model.',trap:null,questions:[
+{t:'List every promo run in the last 2 years: % off for N months, free first session, waived joining fee, founder rates, friend referrals. Each one is a requirements doc.'},
+{t:'For a "50% off for 3 months" offer: what exactly happens in month 4 — auto step-up to full price, and does the member get warned? Does the discount survive a freeze?',n:'Exactly this offer to 186 joiners consumed weeks of manual reconciliation on step-up mechanics and tracking who was on it.',w:1},
+{t:'Do promo members carry a permanent marker, so cohort economics (CAC, LTV, survival) can be computed per offer forever?'},
+{t:'Promo codes: single-use, capped, stackable, expiring? Who can create them, and can front desk apply one retroactively?'},
+{t:'Free trials / free first session: does a trialist get a full member record, app access, and booking rights? What converts them and what expires them?'},
+{t:'Referral scheme: what does the referrer get, when does it vest (on friend\u2019s join? after friend\u2019s 2nd payment?), and how is it paid — credit, free month, cash?'},
+{t:'Can a discount apply to an existing member (retention save-offer), and does that reset or extend their commitment?'},
+{t:'Who has authority to invent a new promo, and what is the process for the platform team to model it before it goes live — not after the first sale?'}
+]},
+{num:'05',title:'Freezes, cancellations & churn',intro:'Cancellation policy is the single most disputed policy in a gym. Ambiguity here becomes refunds, reviews and chargebacks.',trap:null,questions:[
+{t:'Freeze/pause policy: who is eligible, minimum/maximum duration, free or a holding fee, how many per year?'},
+{t:'During a freeze: door access? App access? Can they book for after the freeze ends? Does the commitment period pause too?'},
+{t:'What ends a freeze — a fixed end date set up front, or open-ended until someone remembers?',n:'Mindbody\u2019s booking-suspension flag with a NULL end date means "suspended forever". Members who "paused for two weeks" stayed locked out for years. Require an end date, always.',w:1},
+{t:'Cancellation notice period, exactly: 30 days from when — the request, the next billing date, month end? Does one more payment go out?'},
+{t:'Can a member cancel self-serve in the app, or must they talk to a human? (Be honest about whether the friction is policy or hope.)'},
+{t:'Cancelling inside a minimum term: blocked, early-termination fee, or manager discretion? Who has the discretion?'},
+{t:'On cancellation, what happens to: future class bookings, remaining PT pack sessions, account credit, door access, app login?'},
+{t:'Is churn reason captured at cancellation, mandatorily, in a structured field?',n:'Split across two CRMs, reports silently read the dead one for a year. One system, one field, required.',w:1},
+{t:'Rejoin flow: does a returning member get their old record back (history, packs) or a fresh account? At old price or current price?'},
+{t:'Win-back: how long after cancellation may we contact them, and is there a standing offer?'},
+{t:'Define "churned" precisely for reporting: cancelled? lapsed payment 60 days? per-member or per-product?',n:'Counting product-level cancellations as member churn overstated churn 2.3\u00d7 — members swap products constantly. The metric must be member-grain.',w:1}
+]},
+{num:'06',title:'Onboarding & sales funnel',intro:'This is the Keap/Zapier replacement territory. Map the real pipeline — every hop between systems today is a place people currently fall through.',trap:null,questions:[
+{t:'Walk the full journey step by step: ad \u2192 lead \u2192 first contact \u2192 trial/tour \u2192 sale \u2192 contract \u2192 first payment \u2192 first visit. Which systems touch it today and where do leads leak?'},
+{t:'At what moment does a lead become a member in the database — form submitted, contract signed, first payment cleared? Pick one.'},
+{t:'Is app/portal access provisioned at the moment of signup, synchronously, in the same transaction as payment?',n:'A batch job here means paying members wait days for app access and some never get it — rescue scripts for months. Provision at signup, not on a schedule.',w:1},
+{t:'Invite/magic links: how long are they valid, and what does an expired one show?',n:'Links that expired after ONE HOUR while the email said 7 days made every onboarding email look broken. Test the expiry against the copy.',w:1},
+{t:'Contract signing: e-sign in the flow, or paper? Where does the signed doc live and who can retrieve it in a dispute?'},
+{t:'Health questionnaire / PAR-Q / waiver: required before first visit? Blocking or advisory? Where stored?'},
+{t:'What data is mandatory at signup vs. collected later? (Every extra mandatory field costs conversions; every missing one costs ops later — DOB, emergency contact, photo.)'},
+{t:'Speed-to-lead: what is the target response time to a new lead, and does the platform own the nurture sequences (the Keap replacement) or hand off to a separate CRM?'},
+{t:'If a separate marketing CRM stays, which system owns the contact record, and what syncs which way?',n:'Two-way sync between member platform and CRM is where the Zapier spaghetti lives. One-directional with a clear owner, or don\u2019t split it.',w:1},
+{t:'Attribution: does the member record permanently carry lead source, campaign, and promo — so marketing spend can be judged against 12-month revenue, not just joins?'}
+]},
+{num:'07',title:'Class scheduling',intro:'The schedule is a surprisingly deep object: templates, instances, rooms, instructors, and exceptions all interact.',trap:null,questions:[
+{t:'How is the timetable authored — a repeating weekly template with dated exceptions, or individual events? Who edits it and how often does it actually change?'},
+{t:'When the template changes, what happens to already-booked future instances of the old schedule?'},
+{t:'Does every class need a room/space assignment, and is capacity a property of the class or of the room?',n:'In Mindbody a class type not linked to a room at a site shows "no session times" with zero explanation. Make missing-resource states loud, not silent.',w:1},
+{t:'Instructor substitution: who can swap, do booked members get notified, and does pay attribution follow the sub?'},
+{t:'Gym-initiated class cancellation: notification via push/SMS/email? Are consumed credits auto-returned? How much notice is acceptable?'},
+{t:'Holiday schedules, closures, and one-off events — modelled how?'},
+{t:'Do classes differ per site in name, duration, capacity? Is "Strength 60" one global concept or eight local ones?'},
+{t:'Are there class types with prerequisites, inductions, or level gates?'}
+]},
+{num:'08',title:'Booking rules',intro:'Every rule here is a fairness policy the business must own, because members will argue every single one at the front desk.',trap:null,questions:[
+{t:'Booking window: how far ahead can members book? Same for all tiers, or is early access a perk?'},
+{t:'Late-cancel window per class type, and the penalty: fee, credit lost, strike system, nothing?',n:'This often varies by class — some 24h, some 12h. Per-class-type config, not global.',w:1},
+{t:'No-show policy, and is it actually enforced or just threatened? (The system will enforce whatever is configured — literally.)'},
+{t:'Frequency caps: one class per day? N per week? Do caps differ by membership tier, and do PT sessions count against them?'},
+{t:'Can a member book two overlapping things? Same site? Different sites?',n:'Mindbody has NO cross-site clash check — a member can hold a PT session at one gym and a class at another simultaneously. Build the clash check into the platform: all sites, one member.',w:1},
+{t:'Double-booking the same class: hard-blocked at the API level, not just greyed out in the UI?',n:'Fast double-taps got members booked twice into one class. The uniqueness constraint belongs in the database, with the UI guard as decoration.',w:1},
+{t:'Can staff book on behalf of a member, past the rules (over capacity, inside the cancel window)? Which rules can staff override, and is every override logged with who did it?'},
+{t:'Cancel-and-rebook: if a member cancels, how fast is the spot released, and can they immediately rebook the same slot?',n:'A 20\u201340 second stall between cancel and rebook reads as "the app is broken". Make the state transition atomic.',w:1},
+{t:'Guest bookings: can a member bring a friend, and how is the guest identified, waivered, and charged?'},
+{t:'Open gym / non-class access: does it need booking at all? Time-slot capacity grid, or free-flow with a headcount cap?'}
+]},
+{num:'09',title:'Waitlists',intro:'Small feature, disproportionate support load — more confused members than any other single mechanism.',trap:null,questions:[
+{t:'When a spot opens: auto-promote the first in line, or offer-with-a-claim-window? If a window, how long, and what happens at 11pm?'},
+{t:'If auto-promoted, is the member charged/credited at promotion — and told loudly enough that they actually show up?'},
+{t:'Does a waitlisted member count against booking caps? Can they waitlist multiple classes in the same slot, and what happens if two convert?'},
+{t:'Is the waitlist position visible to the member? (Honesty vs. the support tickets from "I was #2, how did I not get in?")'},
+{t:'Does late-cancel by a promoted waitlister carry the same penalty as a normal booking?'},
+{t:'Race condition policy: two people grab the last spot at the same second — who wins, and what does the loser see?',n:'The "class just filled" path is a real bug class of its own. Design the error message before the error.',w:1}
+]},
+{num:'10',title:'PT & appointments',intro:'One-to-one scheduling is a different beast from classes: availability, resources, reschedules, and trainer economics all live here.',trap:null,questions:[
+{t:'How does a trainer publish availability — recurring hours, ad-hoc slots, per-site? Who can edit it, and does blocking time off cancel existing bookings?'},
+{t:'Reschedule vs. cancel-and-rebook: a reschedule should move the SAME appointment (keep its identity, history, and payment linkage), not delete and recreate it.',n:'Recreated appointments orphan their payment records. This distinction matters enormously in the data.',w:1},
+{t:'Trainer employment model: employed, self-employed renting the client, or rev-share? How is trainer pay computed per session — and per no-show, per late-cancel?'},
+{t:'Who is the money relationship with — the gym charges the client and pays the trainer, or the trainer charges directly? Can this differ per trainer?'},
+{t:'When a trainer leaves: what happens to their clients\u2019 remaining paid sessions, their recurring bookings, and who owns the client relationship?',n:'A trainer exit with 447 paid-for sessions (~\u00a328k of delivery obligation) on the books and no handover mechanism. Model this day one.',w:1},
+{t:'Recurring PT slots ("every Tuesday 7am with Sam") — first-class feature or 12 manual bookings?'},
+{t:'Can a trainer work across multiple sites, and does the clash check cover their whole diary, not per-site?'},
+{t:'Trainer-client assignment: is "who trains whom" a real field in the system?',n:'73% of leavers in one dataset had no assigned trainer — trainer attachment can be the biggest measurable retention lever. If it\u2019s not a field, it can\u2019t be measured.',w:1},
+{t:'Semi-private / small-group PT: 2\u20133 clients, one trainer, split billing — exists? planned?'},
+{t:'Does the trainer get their own app/view: their diary, their clients, their earnings?'}
+]},
+{num:'11',title:'Check-in & door access',intro:'Physical access is where software policy meets a person standing at a door at 6am. The rules must be computable in milliseconds.',trap:null,questions:[
+{t:'What physically opens the door — fob, QR in app, PIN, staffed desk? Same at every site? Staffed hours vs. unstaffed hours?'},
+{t:'Write the door predicate as one sentence: exactly which combination of (active membership / valid booking today / paid-up / not frozen / not suspended) grants entry?'},
+{t:'What happens at the door for a member with a failed payment — hard lockout, grace period, or let in with a flag to front desk?'},
+{t:'Access control integration (Brivo/Kisi etc.): how fast must a new member propagate to the door system, and what is the fallback when the sync is down?'},
+{t:'Does check-in mark class attendance automatically, or is attendance a separate action by the instructor? Who marks no-shows, and by when?'},
+{t:'Is attendance data treated as a retention signal — visits/week drop triggers an alert to someone whose job it is to act?'},
+{t:'Guest and trial access at unstaffed hours: possible? banned? day-pass QR?'}
+]},
+{num:'12',title:'Member identity & data model',intro:'The least glamorous section and the most expensive to get wrong. These are the near-impossible-to-retrofit ones.',trap:null,questions:[
+{t:'One member = one identity across all sites, forever, non-negotiable. Confirm nobody imagines per-site accounts.',n:'Mindbody gave the same person different IDs per site, and numeric IDs even collided ACROSS sites — two different humans sharing an ID depending on context. It poisons every report and integration. This is the #1 reason to leave.',w:1},
+{t:'What is the immutable member ID? Not email, not phone, not name — a system-generated ID that survives every rename, remarriage and typo fix.',n:'Members change names; matching on name or reused numeric IDs burns you. Match on the stable ID, always.',w:1},
+{t:'Duplicate prevention at creation: what dedupe check runs when front desk or a signup form creates a member, and what is the merge tool when a dup slips through?',n:'A card-update flow quietly created a second account for an existing member. Merging after money has flowed to both is grim — prevent, don\u2019t cure.',w:1},
+{t:'Is email required to be unique? What about Apple "Hide My Email" relay addresses, shared family emails, and members with no email?',n:'Apple private-relay addresses break member-matching in the support inbox. Decide the policy now.',w:1},
+{t:'Nicknames and preferred names as separate fields from legal name (contracts need legal; the app should say "Hi Max").'},
+{t:'GDPR: erasure requests vs. the financial records that must be retained for 6\u20137 years — what is anonymised, what is kept, who executes it?'},
+{t:'Every state a member can be in, drawn as an actual diagram: lead, trial, active, frozen, past-due, notice-given, cancelled, banned. And every legal transition between them.'},
+{t:'Can a member be banned/blocked, and what does that switch off?'}
+]},
+{num:'13',title:'Member app',intro:'Real usage data says where to spend the effort — and it is not where you would guess.',trap:null,questions:[
+{t:'Check the actual platform split before building: one comparable gym is 99.2% iOS with not one Android booking ever. Does our demographic justify Android at launch, or is iOS + web enough?',w:1,n:'Get the split from the current Mindbody app analytics before deciding.'},
+{t:'What can members do self-serve, listed exhaustively: book, cancel, waitlist, buy packs, freeze, cancel membership, update card, download invoices, message the gym?'},
+{t:'Old app versions live in the wild for months — is the API versioned from day one, and is there a force-update mechanism for breaking changes?',n:'A booking fix shipped, then weeks of "app is broken" from members on the old version with no way to make them update.',w:1},
+{t:'Push notifications: which events push (booking confirmed, waitlist promoted, class cancelled, payment failed), and which are too noisy?'},
+{t:'In-app messaging with staff: real feature with an owner who answers, or a contact form? Who staffs it?'},
+{t:'Does the app show live class capacity ("3 spots left")? It drives urgency but requires the capacity data to actually be real-time.'},
+{t:'Auth: magic link, password, Apple/Google sign-in? (See the identity section — sign-in-with-Apple brings relay emails.)'},
+{t:'Training content, workout logging, wearables: in scope, later, or never? (Scope creep central — get a written "not v1" list.)'}
+]},
+{num:'14',title:'Staff admin & permissions',intro:'The back office is half the product. Mindbody\u2019s deepest failure is invisibility: things change and nobody can say who or why.',trap:null,questions:[
+{t:'Every action that touches a member, a booking or money carries WHO did it, WHEN, and old\u2192new values. Full audit trail, non-negotiable, from day one.',n:'Mindbody\u2019s API literally does not record who cancelled or edited a booking. "Who did this?" becomes unanswerable — for disputes, staff issues, debugging. This alone justifies the rebuild.',w:1},
+{t:'Staff roles: list them (front desk, trainer, site manager, regional, finance, owner) and what each can see and do. Can front desk see revenue? Can a trainer see other trainers\u2019 clients?'},
+{t:'Are staff permissions per-site? Can a manager at Site A edit anything at Site B?'},
+{t:'Which overrides exist (comp a session, waive a fee, refund, manual credit) and does each require a reason code, logged?'},
+{t:'Staff offboarding: one switch that kills login, door access, and API keys the day someone leaves?'},
+{t:'What does front desk need on ONE screen when a member walks up: photo, status, alerts (payment failed, note from manager), today\u2019s booking?'},
+{t:'Free-text notes on a member: who can read them? (Assume the member will subject-access-request them one day — write policy accordingly.)'},
+{t:'Tasks/follow-ups: does the platform own "call this member back" or does that live elsewhere?'}
+]},
+{num:'15',title:'Comms & automations',intro:'This is what actually replaces Keap and Zapier — enumerate every automated message before assuming "we\u2019ll add email later".',trap:null,questions:[
+{t:'Inventory every automated message that exists today across Keap, Zapier, Mindbody and manual habit: trigger \u2192 channel \u2192 content \u2192 owner. This list IS the spec.'},
+{t:'Transactional vs. marketing split: booking confirmations must always send; marketing needs consent and unsubscribe. Separate sending domains/reputations?'},
+{t:'Channels: email, SMS, push, WhatsApp? Which channel for which event, and what is the fallback when a member has no app installed?'},
+{t:'The critical sequences, named: welcome/onboarding, failed payment dunning, waitlist promotion, class cancelled, freeze ending soon, win-back. Who writes them, who can edit them without a developer?'},
+{t:'Milestone/retention automations: first-visit congrats, 30-day check-in, "we haven\u2019t seen you in 2 weeks" — and crucially, do these trigger a HUMAN task or just send email?'},
+{t:'Is every message logged against the member record, so staff can see what the member was sent before answering their confused reply?'},
+{t:'Rate limiting / collision: a member whose payment failed AND whose class got cancelled AND who hit a milestone — do they get 3 emails in an hour?'}
+]},
+{num:'16',title:'Reporting & metric definitions',intro:'Reports don\u2019t fail at the chart — they fail at the definition. Get the definitions signed, in writing, before the first dashboard.',trap:null,questions:[
+{t:'Define, in writing: "active member", "new join", "churn", "MRR", "attendance". Per-member grain, and everyone uses the same definitions.'},
+{t:'What are the 5 numbers the CEO looks at weekly, and the 5 a site manager needs daily? Build those first; resist the 40-report menu.'},
+{t:'Reporting freshness: is a day-behind warehouse acceptable, or do some numbers (today\u2019s bookings, door entries) need to be live?',n:'A replica running a day behind means every month-to-date number needs a correction recipe. Decide which reports are allowed to lag.',w:1},
+{t:'Cohort views from day one: survival/retention by join-month and by promo.',n:'A measured comparable curve: ~51% still active at month 1, down to a ~30% floor by month 12. Foundry will want to know its own.'},
+{t:'Per-site P&L attribution: which site "owns" a member who joined at A and trains at B?'},
+{t:'Raw data access for the future: an export/API/warehouse path that does not require the original developer?'},
+{t:'Seasonality awareness: gym churn is brutally seasonal — do dashboards compare year-on-year, not just month-on-month?'}
+]},
+{num:'17',title:'Migration off Mindbody',intro:'The build is half the project; the cutover is the other half, and it is the half with existential risk.',trap:{title:'Trap hit for real',text:'API rate limits shaped everything built on Mindbody — hard per-second 429s at peak and surprise usage bills (one month\u2019s API bill spiked to eye-watering levels before being cut 92%). Owning the platform removes that ceiling — but if any third party (ClassPass etc.) still integrates, the new platform needs its own rate limits, keys and abuse handling. Who will its API consumers be?'},questions:[
+{t:'Stored payment details do NOT export. Every paying member must re-enter payment details or sign a new mandate — unless Mindbody agrees to a payment-data transfer. What is the campaign, the deadline, and the policy for the 20% who never respond?',n:'The single biggest cutover risk. Plan it as a months-long project with its own comms sequence, not a data task.',w:1},
+{t:'What migrates: member records, active memberships mid-commitment, remaining pack sessions, FUTURE bookings, contracts/waivers? How is each verified against Mindbody after import?'},
+{t:'How are mid-flight states migrated: a member 4 months into a 12-month term, a live freeze, an in-progress dunning sequence, a promo in its discounted months?'},
+{t:'Historical data: how many years of visits/payments come across vs. archived as read-only exports? (Reports need history; the new schema does not need to model 2019.)'},
+{t:'Dedupe during import: Mindbody data WILL contain duplicates and per-site ID chaos. What is the matching recipe and who adjudicates the ambiguous ones?'},
+{t:'Cutover shape: big bang, site by site, or parallel-run with double entry? Who has authority to call go/no-go, and what is the rollback if week one goes badly?'},
+{t:'Mindbody contract: notice period, export access after termination, and any per-member data fees?'},
+{t:'Staff retraining and the front-desk cheat sheet for week one — whose job?'}
+]},
+{num:'18',title:'Failure modes & the boring questions',intro:'Nobody asks these until the 6am outage. Ask them in the sunshine.',trap:null,questions:[
+{t:'The platform is down at 6am Saturday: can members get through the door? Can classes run? What is the documented offline procedure at each site?'},
+{t:'Billing runs and something is wrong — is there a preview/dry-run step before money moves, and a same-day mass-refund path if a run double-charges?'},
+{t:'Backups: tested restore, not just tested backup. When was a restore last actually performed?'},
+{t:'Bus factor: if this is one developer, what happens when they are on holiday / hit by a bus / hired away? Repo access, docs, credentials, escrow?'},
+{t:'Who answers member-facing support ("app won\u2019t let me book") vs. platform bugs — and how does front desk escalate at 7pm?'},
+{t:'Security basics: card data never touches our servers (Stripe/GoCardless hosted fields), staff 2FA, and an actual plan for a breach notification.'},
+{t:'Status page or at least an internal "is it us or is it down" signal for staff?'},
+{t:'What is deliberately NOT being built — written down and signed, so v1 ships? (Retail/POS, workout content, nutrition, wearables, Android... whatever the answer is, get it in writing.)'}
+]}
+];
+
+let S;
+function load(){
+  try{ S = JSON.parse(localStorage.getItem(KEY)); }catch(e){ S=null; }
+  if(!S || !S.sections){
+    S = {sections: JSON.parse(JSON.stringify(SEED))};
+    S.sections.forEach(s=>s.questions.forEach(q=>{ q.c=false; q.a=''; }));
+  }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+
+const main = document.getElementById('main');
+const toc = document.getElementById('toc');
+
+function counts(){
+  let done=0, tot=0;
+  S.sections.forEach(s=>s.questions.forEach(q=>{ tot++; if(q.c) done++; }));
+  return {done, tot};
+}
+function refreshCounts(){
+  const {done, tot} = counts();
+  document.getElementById('count').textContent = done + ' / ' + tot + ' answered';
+  document.getElementById('bar').style.width = (tot? (done/tot*100):0) + '%';
+  S.sections.forEach((s,i)=>{
+    const d = s.questions.filter(q=>q.c).length;
+    const el = document.getElementById('scount-'+i); if(el) el.textContent = d + ' / ' + s.questions.length;
+    const tl = document.getElementById('toc-'+i); if(tl) tl.querySelector('b').textContent = d + '/' + s.questions.length;
+  });
+}
+function autosize(ta){ ta.style.height='auto'; ta.style.height = Math.max(34, ta.scrollHeight) + 'px'; }
+
+function renderTOC(){
+  toc.innerHTML='';
+  S.sections.forEach((s,i)=>{
+    const a=document.createElement('a');
+    a.href='#sec-'+i; a.id='toc-'+i;
+    a.innerHTML = s.num+' '+s.title+' <b>0/0</b>';
+    a.onclick=(e)=>{ document.getElementById('sec-'+i).open=true; };
+    toc.appendChild(a);
+  });
+}
+
+function renderSection(i){
+  const s = S.sections[i];
+  const old = document.getElementById('sec-'+i);
+  const det = document.createElement('details');
+  det.className='sec'; det.id='sec-'+i;
+  if(old) det.open = old.open; else det.open = (i===0);
+
+  const sum=document.createElement('summary');
+  sum.innerHTML='<span class="snum">'+s.num+'</span><span class="stitle">'+s.title+'</span><span class="scount" id="scount-'+i+'"></span>';
+  det.appendChild(sum);
+
+  if(s.intro){ const p=document.createElement('div'); p.className='intro'; p.textContent=s.intro; det.appendChild(p); }
+
+  const list=document.createElement('div'); list.className='qlist';
+  s.questions.forEach((q,j)=>{
+    const div=document.createElement('div'); div.className='q'+(q.c?' done':'');
+    const label=document.createElement('label');
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!q.c;
+    cb.onchange=()=>{ q.c=cb.checked; div.classList.toggle('done', q.c); save(); refreshCounts(); };
+    const span=document.createElement('span'); span.className='qt'; span.textContent=q.t;
+    label.appendChild(cb); label.appendChild(span);
+    div.appendChild(label);
+    const del=document.createElement('button'); del.className='del'; del.title='Delete question'; del.textContent='\u00d7';
+    del.onclick=()=>{ if(confirm('Delete this question?')){ s.questions.splice(j,1); save(); renderSection(i); refreshCounts(); } };
+    div.appendChild(del);
+    if(q.n){ const nn=document.createElement('div'); nn.className='note'+(q.w?' warn':''); nn.textContent=(q.w?'\u26a0 ':'')+q.n; div.appendChild(nn); }
+    const wrap=document.createElement('div'); wrap.className='ans';
+    const ta=document.createElement('textarea'); ta.placeholder='Answer\u2026'; ta.value=q.a||'';
+    ta.oninput=()=>{ q.a=ta.value; save(); autosize(ta); };
+    wrap.appendChild(ta); div.appendChild(wrap);
+    list.appendChild(div);
+    requestAnimationFrame(()=>autosize(ta));
+  });
+  det.appendChild(list);
+
+  if(s.trap){
+    const t=document.createElement('div'); t.className='trap';
+    t.innerHTML='<b>\u26a0 '+s.trap.title+':</b> ';
+    t.appendChild(document.createTextNode(s.trap.text));
+    det.appendChild(t);
+  }
+
+  const add=document.createElement('div'); add.className='addrow';
+  const inp=document.createElement('input'); inp.placeholder='Add a question to this section\u2026';
+  const btn=document.createElement('button'); btn.textContent='+ Add';
+  const doAdd=()=>{ const v=inp.value.trim(); if(!v) return; s.questions.push({t:v,c:false,a:''}); save(); renderSection(i); refreshCounts(); const nd=document.getElementById('sec-'+i); nd.open=true; };
+  btn.onclick=doAdd; inp.onkeydown=(e)=>{ if(e.key==='Enter') doAdd(); };
+  add.appendChild(inp); add.appendChild(btn);
+  det.appendChild(add);
+
+  if(old) old.replaceWith(det); else main.appendChild(det);
+}
+
+function renderAll(){ main.innerHTML=''; renderTOC(); S.sections.forEach((_,i)=>renderSection(i)); refreshCounts(); }
+
+document.getElementById('expand').onclick=()=>document.querySelectorAll('details.sec').forEach(d=>d.open=true);
+document.getElementById('collapse').onclick=()=>document.querySelectorAll('details.sec').forEach(d=>d.open=false);
+document.getElementById('print').onclick=()=>{ document.querySelectorAll('details.sec').forEach(d=>d.open=true); setTimeout(()=>window.print(),100); };
+document.getElementById('reset').onclick=()=>{ if(confirm('Reset ALL ticks, answers and edits back to the original list?')){ localStorage.removeItem(KEY); load(); renderAll(); } };
+document.getElementById('export').onclick=()=>{
+  const {done,tot}=counts();
+  let md='# Foundry discovery \u2014 answers\n\nExported '+new Date().toLocaleString()+' \u00b7 '+done+' / '+tot+' answered\n';
+  S.sections.forEach(s=>{
+    const d=s.questions.filter(q=>q.c).length;
+    md+='\n## '+s.num+' '+s.title+' ('+d+'/'+s.questions.length+')\n\n';
+    s.questions.forEach(q=>{
+      md+='- ['+(q.c?'x':' ')+'] '+q.t+'\n';
+      if(q.a && q.a.trim()) md+='  - **Answer:** '+q.a.trim().replace(/\n/g,'\n    ')+'\n';
+    });
+  });
+  const blob=new Blob([md],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='foundry-discovery-answers.md'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+load(); renderAll();
+</script>
+</body>
+</html>
