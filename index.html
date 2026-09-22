@@ -21,7 +21,6 @@
   .meta .actions{display:flex;gap:8px;flex-wrap:wrap}
   button{font:inherit;font-size:12.5px;padding:5px 10px;border-radius:6px;border:1px solid #57504a;background:#26221e;color:#eee;cursor:pointer}
   button:hover{background:#332e29}
-  button.danger{border-color:#7a3b32;color:#f2b8ad}
   nav#toc{display:flex;flex-wrap:wrap;gap:6px;padding-top:14px;padding-bottom:6px}
   nav#toc a{font-size:12px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 10px}
   nav#toc a:hover{border-color:var(--acc2)}
@@ -82,7 +81,6 @@
         <button id="collapse">Collapse all</button>
         <button id="export">Download answers</button>
         <button id="print">Print</button>
-        <button id="reset" class="danger">Reset</button>
       </span>
     </div>
   </div>
@@ -392,7 +390,6 @@ function renderAll(){ main.innerHTML=''; renderTOC(); S.sections.forEach((_,i)=>
 document.getElementById('expand').onclick=()=>document.querySelectorAll('details.sec').forEach(d=>d.open=true);
 document.getElementById('collapse').onclick=()=>document.querySelectorAll('details.sec').forEach(d=>d.open=false);
 document.getElementById('print').onclick=()=>{ document.querySelectorAll('details.sec').forEach(d=>d.open=true); setTimeout(()=>window.print(),100); };
-document.getElementById('reset').onclick=()=>{ if(confirm('Reset ALL ticks, answers and edits back to the original list?')){ localStorage.removeItem(KEY); load(); renderAll(); } };
 document.getElementById('export').onclick=()=>{
   const {done,tot}=counts();
   let md='# Foundry discovery \u2014 answers\n\nExported '+new Date().toLocaleString()+' \u00b7 '+done+' / '+tot+' answered\n';
